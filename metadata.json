@@ -1,0 +1,6 @@
+{
+  "name": "English Word Dictation",
+  "description": "A responsive English word dictation application with preset high-frequency Gaokao words, audio pronunciation options, customizable timing and repetition, and dictionary import features.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
