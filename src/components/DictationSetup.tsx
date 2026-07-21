@@ -89,7 +89,19 @@ export default function DictationSetup({
       return;
     }
     setSetupError('');
-    onStart(targetWordsForDictation);
+
+    let wordsToSend = [...targetWordsForDictation];
+    if (config.shuffle) {
+      // Fisher-Yates shuffle algorithm to perfectly randomize word list order
+      for (let i = wordsToSend.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = wordsToSend[i];
+        wordsToSend[i] = wordsToSend[j];
+        wordsToSend[j] = temp;
+      }
+    }
+
+    onStart(wordsToSend);
   };
 
   // Watch custom range formatting
@@ -272,60 +284,105 @@ export default function DictationSetup({
         </div>
 
         {/* Pronunciation repetition & Timer config */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Repeat Times Slider */}
-          <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-slate-400">朗读频次 (每词重复播放次数)：</span>
-              <span className="text-sm font-mono font-bold text-amber-400">{config.repeatTimes} 遍</span>
+          <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-semibold text-slate-400">朗读频次 (每词重复次数)：</span>
+                <span className="text-sm font-mono font-bold text-amber-400">{config.repeatTimes} 遍</span>
+              </div>
+              <input
+                id="repeat-times-range"
+                type="range"
+                min={1}
+                max={5}
+                value={config.repeatTimes}
+                onChange={(e) => setConfig(prev => ({ ...prev, repeatTimes: parseInt(e.target.value, 10) }))}
+                className="w-full accent-amber-500 h-1.5 bg-white/5 rounded-lg cursor-pointer"
+              />
             </div>
-            <input
-              id="repeat-times-range"
-              type="range"
-              min={1}
-              max={5}
-              value={config.repeatTimes}
-              onChange={(e) => setConfig(prev => ({ ...prev, repeatTimes: parseInt(e.target.value, 10) }))}
-              className="w-full accent-amber-500 h-1.5 bg-white/5 rounded-lg cursor-pointer"
-            />
             <span className="text-[10px] text-slate-500 block mt-1.5 leading-normal">
-              单词听写时发音人将按指定的数量循环朗读该词，加深声学记忆
+              单词听写时发音人将按指定的数量循环朗读该词
             </span>
           </div>
 
           {/* Timer slider */}
-          <div className="bg-black/20 p-4 rounded-xl border border-white/5">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-slate-400">自动切换间隔倒计时：</span>
-              <span className="text-sm font-mono font-bold text-amber-400">
-                {config.autoNext ? `${config.interval} 秒` : '手动点击切换'}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <input
-                id="interval-seconds-range"
-                type="range"
-                min={5}
-                max={30}
-                step={1}
-                disabled={!config.autoNext}
-                value={config.interval}
-                onChange={(e) => setConfig(prev => ({ ...prev, interval: parseInt(e.target.value, 10) }))}
-                className="flex-1 accent-amber-500 h-1.5 bg-white/5 rounded-lg disabled:opacity-20 cursor-pointer"
-              />
-              <div className="flex items-center gap-1.5 whitespace-nowrap">
+          <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-semibold text-slate-400">自动切换间隔倒计时：</span>
+                <span className="text-sm font-mono font-bold text-amber-400">
+                  {config.autoNext ? `${config.interval} 秒` : '手动切换'}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
                 <input
-                  id="chk-auto-next"
-                  type="checkbox"
-                  checked={config.autoNext}
-                  onChange={(e) => setConfig(prev => ({ ...prev, autoNext: e.target.checked }))}
-                  className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500/50 border-white/10 bg-black/40 accent-amber-500 cursor-pointer"
+                  id="interval-seconds-range"
+                  type="range"
+                  min={5}
+                  max={30}
+                  step={1}
+                  disabled={!config.autoNext}
+                  value={config.interval}
+                  onChange={(e) => setConfig(prev => ({ ...prev, interval: parseInt(e.target.value, 10) }))}
+                  className="flex-1 accent-amber-500 h-1.5 bg-white/5 rounded-lg disabled:opacity-20 cursor-pointer"
                 />
-                <span className="text-xs font-medium text-slate-400">自动跳转</span>
+                <div className="flex items-center gap-1.5 whitespace-nowrap">
+                  <input
+                    id="chk-auto-next"
+                    type="checkbox"
+                    checked={config.autoNext}
+                    onChange={(e) => setConfig(prev => ({ ...prev, autoNext: e.target.checked }))}
+                    className="w-4 h-4 rounded text-amber-500 focus:ring-amber-500/50 border-white/10 bg-black/40 accent-amber-500 cursor-pointer"
+                  />
+                  <span className="text-xs font-medium text-slate-400">自动跳转</span>
+                </div>
               </div>
             </div>
             <span className="text-[10px] text-slate-500 block mt-1.5 leading-normal">
-              默认10秒。若关闭，拼写完该词后需手动敲回车或点击“下一词”跳转
+              若关闭，拼写完该词后需手动敲回车或点击按钮跳转
+            </span>
+          </div>
+
+          {/* Shuffle Toggle Card */}
+          <div className="bg-black/20 p-4 rounded-xl border border-white/5 flex flex-col justify-between min-h-[140px]">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-semibold text-slate-400">单词播放顺序：</span>
+                <span className="text-sm font-mono font-bold text-amber-400">
+                  {config.shuffle ? '随机乱序 🔀' : '列表顺序 ➡️'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  id="btn-toggle-shuffle-on"
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, shuffle: true }))}
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition duration-200 border cursor-pointer ${
+                    config.shuffle
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                      : 'bg-black/30 border-white/5 hover:border-white/10 text-slate-500'
+                  }`}
+                >
+                  打乱 🔀
+                </button>
+                <button
+                  id="btn-toggle-shuffle-off"
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, shuffle: false }))}
+                  className={`flex-1 py-1 px-2 rounded-lg text-xs font-semibold transition duration-200 border cursor-pointer ${
+                    !config.shuffle
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                      : 'bg-black/30 border-white/5 hover:border-white/10 text-slate-500'
+                  }`}
+                >
+                  顺序 ➡️
+                </button>
+              </div>
+            </div>
+            <span className="text-[10px] text-slate-500 block mt-1.5 leading-normal">
+              启用后，听写流程中选中的单词将会随机打乱进行自测
             </span>
           </div>
         </div>

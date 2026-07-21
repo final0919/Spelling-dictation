@@ -26,6 +26,7 @@ export interface DictationConfig {
   voiceLanguage: string; // 默认发音语言
   voiceName: string; // 默认发音人名称
   soundEngine: 'youdao' | 'local'; // 默认发音引擎
+  shuffle: boolean; // 是否打乱顺序
 }
 
 export interface DictationItem {

@@ -31,7 +31,8 @@ export default function App() {
     speakRate: 1.0,
     voiceLanguage: 'en-US',
     voiceName: '',
-    soundEngine: 'youdao'
+    soundEngine: 'youdao',
+    shuffle: false
   });
 
   // Active Dictation State: 'idle' | 'active' | 'report'
